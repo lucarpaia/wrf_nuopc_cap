@@ -1,7 +1,7 @@
 NUOPC cap layer for WRF Model Version 4.5.1
 
-How to include the files in WRF
-================================
+How to include the files in WRF?
+===========================================
 
 WRF_UPDATE_DIR0=/path/to/wrf_nuopc_cap/src
 WRF_UPDATE_DIR1=/path/to/wrf_nuopc_cap
@@ -22,3 +22,31 @@ ln -sf ${WRF_UPDATE_DIR0}/nuopc_wrf_cap.F path/to/wrf/main/
 ln -sf ${WRF_UPDATE_DIR0}/Makefile.main path/to/wrf/main/Makefile
 
 ln -sf ${WRF_UPDATE_DIR1}/makefile.io_esmf path/to/wrf/external/io_esmf/makefile
+
+How to compile the WRF library and cap layer?
+==============================================
+
+Before configuring wrf set the following:
+
+export ESMFLIB=/path/to/esmf-8.6.0/lib/libO/Linux.gfortran.64.openmpi.default
+export ESMFINC=/path/to/esmf-8.6.0/mod/modO/Linux.gfortran.64.openmpi.default
+
+Then follows the usual configure wrf step:
+
+cd path/to/wrf
+./configure
+
+We have to add manually the netcdf library. Open the configure.wrf and
+add -lnetcdff in LIB_EXTERNAL. Open external/io_netcdf/makefile and 
+add -lnetcdff in LIBS. Finally modify:
+
+ESMF_COUPLING = 2
+
+Then compile:
+
+./compile em_real
+
+It will give you an error. Recompile and should be fine (we have to fix this).
+
+
+
