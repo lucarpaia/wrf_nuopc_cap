@@ -6,6 +6,7 @@ FC          =       mpif90 -f90=$(SFC)
 ESMF_DIR=/usr2/luca/Devs/esmf-8.6.0
 ESMF_INCLUDE  = ${ESMF_DIR}/mod/modO/Linux.gfortran.64.openmpi.default
 WRF_DIR=/usr2/luca/Devs/shyfem-wrf-esmf/wrf/WRF
+NETCDF_DIR=/home/model/lib/lib
 CURRENT_DIR=/usr2/luca/Devs/shyfem-wrf-esmf/wrf/WRF/external/io_esmf
 NUOPCMOD      = atmosphere_wrf
 NUOPC_OBJ     = nuopc_wrf_cap.o
@@ -68,7 +69,7 @@ nuopc_wrf.mk:
                                     $(WRF_DIR)/external/RSL_LITE/librsl_lite.a           \
                                     $(WRF_DIR)/frame/module_internal_header_util.o       \
                                     $(WRF_DIR)/frame/pack_utils.o >> $@
-	@echo "WRF_DEP_SHRD_PATH = "/home/model/lib/lib                          \
+	@echo "WRF_DEP_SHRD_PATH = "$(NETCDF_DIR)                                \
                                     $(WRF_DIR)/external/io_netcdf                \
                                     $(WRF_DIR)/external/io_esmf   >> $@
 	@echo "WRF_DEP_SHRD_LIBS = "netcdff netcdf wrfio_nf wrfio_esmf >> $@
