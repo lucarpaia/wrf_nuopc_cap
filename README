@@ -4,7 +4,6 @@ How to include the files in WRF?
 ===========================================
 
 WRF_UPDATE_DIR0=/path/to/wrf_nuopc_cap/src
-WRF_UPDATE_DIR1=/path/to/wrf_nuopc_cap
 
 ln -sf ${WRF_UPDATE_DIR0}/Makefile.wrf path/to/wrf/Makefile
 ln -sf ${WRF_UPDATE_DIR0}/module_domain.F path/to/wrf/frame/
@@ -21,7 +20,19 @@ ln -sf ${WRF_UPDATE_DIR0}/wrf_ESMFMod.F path/to/wrf/main/
 ln -sf ${WRF_UPDATE_DIR0}/nuopc_wrf_cap.F path/to/wrf/main/
 ln -sf ${WRF_UPDATE_DIR0}/Makefile.main path/to/wrf/main/Makefile
 
+Then copy also the makefile that create the wrf library with the cap layer and
+create the makefile fragment:
+
+WRF_UPDATE_DIR1=/path/to/wrf_nuopc_cap
 ln -sf ${WRF_UPDATE_DIR1}/makefile.io_esmf path/to/wrf/external/io_esmf/makefile
+
+This file must be modified manually, setting the correct paths:
+
+ESMF_DIR=/path/to/esmf-release-8.6.0
+ESMF_INCLUDE  = ${ESMF_DIR}/mod/modO/Linux.gfortran.64.openmpi.default
+WRF_DIR=/path/to/wrf
+NETCDF_DIR=/usr
+CURRENT_DIR=/path/to/wrf/external/io_esmf
 
 How to compile the WRF library and cap layer?
 ==============================================
