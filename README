@@ -25,7 +25,7 @@ Then copy also the makefile that create the wrf library with the cap layer and
 create the makefile fragment:
 
 WRF_UPDATE_DIR1=/path/to/wrf_nuopc_cap
-ln -sf ${WRF_UPDATE_DIR1}/makefile.io_esmf path/to/wrf/external/io_esmf/makefile
+ln -sf ${WRF_UPDATE_DIR1}/makefile.io_esmf            ${WRF_DIR}/external/io_esmf/makefile
 
 This file must be modified manually, setting the correct paths:
 
