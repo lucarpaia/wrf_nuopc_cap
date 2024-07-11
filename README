@@ -3,7 +3,7 @@ NUOPC cap layer for WRF Model Version 4.5.1
 How to include the files in WRF?
 ===========================================
 
-WRF_DIR=/path/to/wrf_nuopc_cap/src
+WRF_DIR=/path/to/wrf
 WRF_UPDATE_DIR0=/path/to/wrf_nuopc_cap/src
 
 ln -sf ${WRF_UPDATE_DIR0}/Makefile.wrf                ${WRF_DIR}/Makefile
