@@ -7,19 +7,20 @@ WRF_DIR=/path/to/wrf
 WRF_UPDATE_DIR0=/path/to/wrf_nuopc_cap/src
 
 ln -sf ${WRF_UPDATE_DIR0}/Makefile.wrf                ${WRF_DIR}/Makefile
+ln -sf ${WRF_UPDATE_DIR0}/Config.pl                   ${WRF_DIR}/arch/
 ln -sf ${WRF_UPDATE_DIR0}/module_domain.F             ${WRF_DIR}/frame/
 ln -sf ${WRF_UPDATE_DIR0}/module_diag_rasm.F          ${WRF_DIR}/phys/
-ln -sf ${WRF_UPDATE_DIR0}/module_ltng_iccg.F          ${WRF_DIR}/phys/
-ln -sf ${WRF_UPDATE_DIR0}/input_wrf.F                 ${WRF_DIR}/share/
-ln -sf ${WRF_UPDATE_DIR0}/ext_esmf_write_field.F90    ${WRF_DIR}/external/io_esmf/
-ln -sf ${WRF_UPDATE_DIR0}/ext_esmf_read_field.F90     ${WRF_DIR}/external/io_esmf/
-ln -sf ${WRF_UPDATE_DIR0}/ext_esmf_open_for_read.F90  ${WRF_DIR}/external/io_esmf/
-ln -sf ${WRF_UPDATE_DIR0}/ext_esmf_open_for_write.F90 ${WRF_DIR}/external/io_esmf/
-ln -sf ${WRF_UPDATE_DIR0}/module_esmf_extensions.F90  ${WRF_DIR}/external/io_esmf/
-ln -sf ${WRF_UPDATE_DIR0}/io_esmf.F90                 ${WRF_DIR}/external/io_esmf/
-ln -sf ${WRF_UPDATE_DIR0}/wrf_ESMFMod.F               ${WRF_DIR}/main/
-ln -sf ${WRF_UPDATE_DIR0}/nuopc_wrf_cap.F             ${WRF_DIR}/main/
-ln -sf ${WRF_UPDATE_DIR0}/Makefile.main               ${WRF_DIR}/main/Makefile
+#ln -sf ${WRF_UPDATE_DIR0}/module_ltng_iccg.F          ${WRF_DIR}/phys/
+#ln -sf ${WRF_UPDATE_DIR0}/input_wrf.F                 ${WRF_DIR}/share/
+#ln -sf ${WRF_UPDATE_DIR0}/ext_esmf_write_field.F90    ${WRF_DIR}/external/io_esmf/
+#ln -sf ${WRF_UPDATE_DIR0}/ext_esmf_read_field.F90     ${WRF_DIR}/external/io_esmf/
+#ln -sf ${WRF_UPDATE_DIR0}/ext_esmf_open_for_read.F90  ${WRF_DIR}/external/io_esmf/
+#ln -sf ${WRF_UPDATE_DIR0}/ext_esmf_open_for_write.F90 ${WRF_DIR}/external/io_esmf/
+#ln -sf ${WRF_UPDATE_DIR0}/module_esmf_extensions.F90  ${WRF_DIR}/external/io_esmf/
+#ln -sf ${WRF_UPDATE_DIR0}/io_esmf.F90                 ${WRF_DIR}/external/io_esmf/
+#ln -sf ${WRF_UPDATE_DIR0}/wrf_ESMFMod.F               ${WRF_DIR}/main/
+#ln -sf ${WRF_UPDATE_DIR0}/nuopc_wrf_cap.F             ${WRF_DIR}/main/
+#ln -sf ${WRF_UPDATE_DIR0}/Makefile.main               ${WRF_DIR}/main/Makefile
 
 Then copy also the makefile that create the wrf library with the cap layer and
 create the makefile fragment:
@@ -48,17 +49,17 @@ Then follows the usual configure wrf step:
 cd path/to/wrf
 ./configure
 
-We have to add manually the netcdf library. Open the configure.wrf and
-add -lnetcdff in LIB_EXTERNAL. Open external/io_netcdf/makefile and 
-add -lnetcdff in LIBS. Finally modify:
-
-ESMF_COUPLING = 2
-
+#We have to add manually the netcdf library. Open the configure.wrf and
+#add -lnetcdff in LIB_EXTERNAL. Open external/io_netcdf/makefile and 
+#add -lnetcdff in LIBS. Finally modify:
+#
+#ESMF_COUPLING = 2
+#
 Then compile:
 
 ./compile em_real
 
-It will give you an error. Recompile and should be fine (we have to fix this).
+#It will give you an error. Recompile and should be fine (we have to fix this).
 
 
 

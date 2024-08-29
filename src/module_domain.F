@@ -2584,38 +2584,38 @@ CONTAINS
 
         Is_alarm_tstep = .FALSE.
 
-        !! IF ( ASSOCIATED( alarm%alarmint ) ) THEN
-        !!   IF ( alarm%alarmint%Enabled ) THEN
-        !!     IF ( alarm%alarmint%RingIntervalSet ) THEN
-        !!       pred1 = .FALSE. ; pred2 = .FALSE. ; pred3 = .FALSE.
-        !!       IF ( alarm%alarmint%StopTimeSet ) THEN
-        !!          PRED1 = ( grid_clock%clockint%CurrTime + grid_clock%clockint%TimeStep > &
-        !!               alarm%alarmint%StopTime )
-        !!       ENDIF
-        !!       IF ( alarm%alarmint%RingTimeSet ) THEN
-        !!          PRED2 = ( ( alarm%alarmint%RingTime - &
-        !!               grid_clock%clockint%TimeStep <= &
-        !!               grid_clock%clockint%CurrTime )     &
-        !!               .AND. ( grid_clock%clockint%CurrTime < alarm%alarmint%RingTime ) )
-        !!       ENDIF
-        !!       IF ( alarm%alarmint%RingIntervalSet ) THEN
-        !!          PRED3 = ( alarm%alarmint%PrevRingTime + &
-        !!               alarm%alarmint%RingInterval <= &
-        !!               grid_clock%clockint%CurrTime + grid_clock%clockint%TimeStep )
-        !!       ENDIF
-        !!       IF ( ( .NOT. ( pred1 ) ) .AND. &
-        !!            ( ( pred2 ) .OR. ( pred3 ) ) ) THEN
-        !!          Is_alarm_tstep = .TRUE.
-        !!       ENDIF
-        !!     ELSE IF ( alarm%alarmint%RingTimeSet ) THEN
+        !!IF ( ASSOCIATED( alarm%alarmint ) ) THEN
+        !!  IF ( alarm%alarmint%Enabled ) THEN
+        !!    IF ( alarm%alarmint%RingIntervalSet ) THEN
+        !!      pred1 = .FALSE. ; pred2 = .FALSE. ; pred3 = .FALSE.
+        !!      IF ( alarm%alarmint%StopTimeSet ) THEN
+        !!         PRED1 = ( grid_clock%clockint%CurrTime + grid_clock%clockint%TimeStep > &
+        !!              alarm%alarmint%StopTime )
+        !!      ENDIF
+        !!      IF ( alarm%alarmint%RingTimeSet ) THEN
+        !!         PRED2 = ( ( alarm%alarmint%RingTime - &
+        !!              grid_clock%clockint%TimeStep <= &
+        !!              grid_clock%clockint%CurrTime )     &
+        !!              .AND. ( grid_clock%clockint%CurrTime < alarm%alarmint%RingTime ) )
+        !!      ENDIF
+        !!      IF ( alarm%alarmint%RingIntervalSet ) THEN
+        !!         PRED3 = ( alarm%alarmint%PrevRingTime + &
+        !!              alarm%alarmint%RingInterval <= &
+        !!              grid_clock%clockint%CurrTime + grid_clock%clockint%TimeStep )
+        !!      ENDIF
+        !!      IF ( ( .NOT. ( pred1 ) ) .AND. &
+        !!           ( ( pred2 ) .OR. ( pred3 ) ) ) THEN
+        !!         Is_alarm_tstep = .TRUE.
+        !!      ENDIF
+        !!    ELSE IF ( alarm%alarmint%RingTimeSet ) THEN
         !!      IF ( alarm%alarmint%RingTime -&
-        !!            grid_clock%clockint%TimeStep <= &
-        !!            grid_clock%clockint%CurrTime ) THEN
-        !!          Is_alarm_tstep = .TRUE.
-        !!       ENDIF
-        !!     ENDIF
-        !!   ENDIF
-        !! ENDIF
+        !!           grid_clock%clockint%TimeStep <= &
+        !!           grid_clock%clockint%CurrTime ) THEN
+        !!         Is_alarm_tstep = .TRUE.
+        !!      ENDIF
+        !!    ENDIF
+        !!  ENDIF
+        !!ENDIF
 
       END FUNCTION Is_alarm_tstep
 
