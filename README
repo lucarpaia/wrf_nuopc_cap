@@ -11,7 +11,7 @@ ln -sf ${WRF_UPDATE_DIR0}/Config.pl                   ${WRF_DIR}/arch/
 ln -sf ${WRF_UPDATE_DIR0}/module_domain.F             ${WRF_DIR}/frame/
 ln -sf ${WRF_UPDATE_DIR0}/module_diag_rasm.F          ${WRF_DIR}/phys/
 ln -sf ${WRF_UPDATE_DIR0}/module_esmf_extensions.F90  ${WRF_DIR}/external/io_esmf/
-#ln -sf ${WRF_UPDATE_DIR0}/module_ltng_iccg.F          ${WRF_DIR}/phys/
+ln -sf ${WRF_UPDATE_DIR0}/module_ltng_iccg.F          ${WRF_DIR}/phys/
 #ln -sf ${WRF_UPDATE_DIR0}/input_wrf.F                 ${WRF_DIR}/share/
 #ln -sf ${WRF_UPDATE_DIR0}/ext_esmf_write_field.F90    ${WRF_DIR}/external/io_esmf/
 #ln -sf ${WRF_UPDATE_DIR0}/ext_esmf_read_field.F90     ${WRF_DIR}/external/io_esmf/
