@@ -718,14 +718,14 @@ module atmosphere_wrf
           if (str(ii:ii)/="0") exit
         enddo
         if (str(ii:ii)==".") ii=ii-1
-        write(1,'(aX)', advance="no") str(1:ii)
+        write(1,'(a,a)', advance="no") str(1:ii), " "
         write(str,'(f11.3)') head_grid%xlat(i,j) 
         str = trim(adjustl(str))
         do ii = len_trim(str),1,-1
           if (str(ii:ii)/="0") exit
         enddo
         if (str(ii:ii)==".") ii=ii-1
-        write(1,'(aX,i1)') str(1:ii), 0
+        write(1,'(a,a)') str(1:ii), " 0"
       enddo
       enddo
     else  
@@ -738,7 +738,7 @@ module atmosphere_wrf
           if (str(ii:ii)/="0") exit
         enddo
         if (str(ii:ii)==".") ii=ii-1
-        write(1,'(aX)', advance="no") str(1:ii)
+        write(1,'(a,a)', advance="no") str(1:ii), " "
         write(str,'(f11.3)') &
           (real(j)-1) * head_grid%dy !+  0.5*head_grid%dy       
         str = trim(adjustl(str))
@@ -746,7 +746,7 @@ module atmosphere_wrf
           if (str(ii:ii)/="0") exit
         enddo
         if (str(ii:ii)==".") ii=ii-1
-        write(1,'(aX,i1)') str(1:ii), 0	      
+        write(1,'(a,a)') str(1:ii), " 0"	      
       enddo
       enddo
     endif  
@@ -778,7 +778,7 @@ module atmosphere_wrf
         if (str(ii:ii)/="0") exit
       enddo
       if (str(ii:ii)==".") ii=ii-1
-      write(1,'(aX)', advance="no") str(1:ii)
+      write(1,'(a,a)', advance="no") str(1:ii), " "
     end do  
     end do
     close(1)
