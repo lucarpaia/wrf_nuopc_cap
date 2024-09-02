@@ -1,25 +1,8 @@
 # these settings for compiling standalone on Compaq. Type "make -r"
-CPP = /lib/cpp -P
-#FC  = mpif90 -r4 -i4  -w -Mfree -byteswapio 
-SFC         =       gfortran
-FC          =       mpif90 -f90=$(SFC)
-ESMF_DIR=/usr2/luca/Devs/esmf-8.6.0
-ESMF_INCLUDE  = ${ESMF_DIR}/mod/modO/Linux.gfortran.64.openmpi.default
-WRF_DIR=/usr2/luca/Devs/shyfem-wrf-esmf/wrf/WRF
-NETCDF_DIR=/home/model/lib/lib
-CURRENT_DIR=/usr2/luca/Devs/shyfem-wrf-esmf/wrf/WRF/external/io_esmf
+include ../../configure.wrf
+WRF_DIR=$(PWD)/../..
 NUOPCMOD      = atmosphere_wrf
 NUOPC_OBJ     = nuopc_wrf_cap.o
-INCLUDE_MODULES = -I$(CURRENT_DIR)/../../ \
-			      -I$(CURRENT_DIR)/../../main \
-                  -I$(CURRENT_DIR)/../../external/io_netcdf \
-                  -I$(CURRENT_DIR)/../../external/io_int \
-                  -I$(CURRENT_DIR)/../../frame \
-                  -I$(CURRENT_DIR)/../../share \
-                  -I$(CURRENT_DIR)/../../phys \
-                  -I$(CURRENT_DIR)/../../wrftladj \
-                  -I$(CURRENT_DIR)/../../chem \
-                  -I$(CURRENT_DIR)/../../inc
 
 .SUFFIXES: .F90 .o
 
@@ -46,7 +29,7 @@ nuopc_wrf.mk:
 	@echo "creating nuopc makefile fragment"
 	@echo "# ESMF self-describing build dependency makefile fragment for WRF model" > $@
 	@echo >> $@
-	@echo "WRF_DEP_FRONT     = "$(NUOPCMOD)                   >> $@        
+	@echo "WRF_DEP_FRONT     = "$(NUOPCMOD)                   >> $@
 	@echo "WRF_DEP_INCPATH   = "$(WRF_DIR)/dyn_em                \
                                     $(WRF_DIR)/main                  \
                                     $(WRF_DIR)/external/io_esmf      \
@@ -69,7 +52,7 @@ nuopc_wrf.mk:
                                     $(WRF_DIR)/external/RSL_LITE/librsl_lite.a           \
                                     $(WRF_DIR)/frame/module_internal_header_util.o       \
                                     $(WRF_DIR)/frame/pack_utils.o >> $@
-	@echo "WRF_DEP_SHRD_PATH = "$(NETCDF_DIR)                                \
+	@echo "WRF_DEP_SHRD_PATH = "$(NETCDFPATH)                                \
                                     $(WRF_DIR)/external/io_netcdf                \
                                     $(WRF_DIR)/external/io_esmf   >> $@
 	@echo "WRF_DEP_SHRD_LIBS = "netcdff netcdf wrfio_nf wrfio_esmf >> $@
@@ -80,15 +63,13 @@ $(TARGET) : $(OBJS)
 
 .F90.o :
 	$(CPP) -I../ioapi_share -P -traditional -DESMF_COUPLING $*.F90 > $*.f
-	$(FC) -I$(ESMF_INCLUDE) -I$(CURRENT_DIR) $(INCLUDE_MODULES) -c -g -I../ioapi_share $*.f
+	$(FC) -c -g -I../ioapi_share $*.f
 
 superclean: 
 	@/bin/rm -f *.f *.o $(TARGET) *.mod
 
 # DEPENDENCIES : only dependencies after this line 
 
-module_symbols_util.o :
-module_esmf_extensions.o :
 module_utility.o : module_symbols_util.o module_esmf_extensions.o
 io_esmf.o : module_esmf_extensions.o
 ext_esmf_open_for_read.o : io_esmf.o
