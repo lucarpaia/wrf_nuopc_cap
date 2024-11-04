@@ -458,7 +458,7 @@ em_tropical_cyclone : wrf
 	@ echo '--------------------------------------'
 	( cd main ; $(MAKE) RLFLAGS="$(RLFLAGS)" MODULE_DIRS="$(ALL_MODULES)" SOLVER=em IDEAL_CASE=tropical_cyclone em_ideal )
 	if [ $(ESMF_COUPLING) -eq 2 ] ; then \
-	( cd $(WRF_SRC_ROOT_DIR)/external/io_esmf ; $(MAKE) nuopc ) ; \
+	( cd $(WRF_SRC_ROOT_DIR)/external/io_esmf ; $(MAKE) nuopc NETCDFPATH="$(NETCDFPATH)" ) ; \
 	fi
 	( cd test/em_tropical_cyclone ; /bin/rm -f wrf.exe ; ln -s ../../main/wrf.exe . )
 	( cd test/em_tropical_cyclone ; /bin/rm -f ideal.exe ; ln -s ../../main/ideal.exe . )
