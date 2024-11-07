@@ -1,5 +1,4 @@
 # these settings for compiling standalone on Compaq. Type "make -r"
-include ../../configure.wrf
 WRF_DIR=$(PWD)/../..
 NUOPCMOD      = atmosphere_wrf
 NUOPC_OBJ     = nuopc_wrf_cap.o
@@ -20,7 +19,18 @@ OBJS = module_symbols_util.o \
 
 TARGET = libwrfio_esmf.a
 
-nuopc: nuopc_clean nuopc_wrf.mk $(TARGET)
+$(TARGET) : $(OBJS)
+	$(AR) ru $(TARGET) $(OBJS)
+	$(RANLIB) $(TARGET)
+
+.F90.o :
+	$(CPP) -I../ioapi_share -P -traditional -DESMF_COUPLING $*.F90 > $*.f
+	$(FC) -c -g -I../ioapi_share $*.f
+
+superclean:
+	@/bin/rm -f *.f *.o $(TARGET) *.mod
+
+nuopc: nuopc_clean nuopc_wrf.mk
 
 nuopc_clean:
 	-rm -f *.mk
@@ -42,7 +52,7 @@ nuopc_wrf.mk:
                                     $(WRF_DIR)/inc                >> $@
 	@echo "WRF_DEP_CMPL_OBJS = "$(WRF_DIR)/main/$(NUOPC_OBJ)  >> $@
 	@echo "WRF_DEP_LINK_OBJS = "$(WRF_DIR)/main/nuopc_wrf_cap.o                     \
-	                            $(WRF_DIR)/main/module_wrf_top.o                     \
+                                    $(WRF_DIR)/main/module_wrf_top.o                     \
                                     $(WRF_DIR)/main/libwrflib.a                          \
                                     $(WRF_DIR)/external/fftpack/fftpack5/libfftpack.a    \
                                     $(WRF_DIR)/external/io_grib1/libio_grib1.a           \
@@ -57,16 +67,6 @@ nuopc_wrf.mk:
                                     $(WRF_DIR)/external/io_esmf   >> $@
 	@echo "WRF_DEP_SHRD_LIBS = "netcdff netcdf wrfio_nf wrfio_esmf >> $@
 
-$(TARGET) : $(OBJS)
-	$(AR) ru $(TARGET) $(OBJS)
-	$(RANLIB) $(TARGET)
-
-.F90.o :
-	$(CPP) -I../ioapi_share -P -traditional -DESMF_COUPLING $*.F90 > $*.f
-	$(FC) -c -g -I../ioapi_share $*.f
-
-superclean: 
-	@/bin/rm -f *.f *.o $(TARGET) *.mod
 
 # DEPENDENCIES : only dependencies after this line 
 

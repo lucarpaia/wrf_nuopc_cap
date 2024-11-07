@@ -4,7 +4,7 @@ LN      =       ln -sf
 MAKE    =       make -i -r
 RM      =       rm -f
 
-MODULES =  nuopc_wrf_cap.F module_wrf_top.F
+MODULES =  module_wrf_top.F
 
 OBJS    =
 
@@ -14,7 +14,7 @@ include ../configure.wrf
 
 $(SOLVER)_wrf : wrf.o ../main/nuopc_wrf_cap.o ../main/module_wrf_top.o
 	$(RANLIB) $(RLFLAGS) $(LIBWRFLIB)
-	$(LD) -o wrf.exe $(LDFLAGS) wrf.o ../main/nuopc_wrf_cap.o ../main/module_wrf_top.o $(LIBWRFLIB) $(CMAQLIB) $(LIB) 
+	$(LD) -o wrf.exe $(LDFLAGS) wrf.o ../main/nuopc_wrf_cap.o ../main/module_wrf_top.o $(LIBWRFLIB) $(CMAQLIB) $(LIB)
 
 $(SOLVER)_wrfplus : wrf.o ../main/module_wrf_top.o
 	$(RANLIB) $(RLFLAGS) $(LIBWRFLIB)
