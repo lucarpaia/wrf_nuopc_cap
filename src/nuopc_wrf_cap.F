@@ -147,10 +147,10 @@ module atmosphere_wrf
 
     allocate( WRF_FieldMetadata(11) )
     
-#undef  WITHFIELDS_MOMENTUMFLUX
-#undef  WITHFIELDS_HEATFLUX
-#undef  WITHFIELDS_MASSFLUX
-#undef  WITHFIELDS_SST
+#define WITHFIELDS_MOMENTUMFLUX
+#define WITHFIELDS_HEATFLUX
+#define WITHFIELDS_MASSFLUX
+#define WITHFIELDS_SST
     !! We have added one macro to rapidly decouple the atmosphere component from the rest
     !! of the earth system. Disabling the following macros,
     !! will result in an atmosphere component that does not advertise any importable
