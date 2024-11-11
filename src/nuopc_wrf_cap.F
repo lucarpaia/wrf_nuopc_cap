@@ -43,6 +43,7 @@ module atmosphere_wrf
   type WRF_Grid
     integer                     :: localPet
     integer                     :: petCount
+    integer                     :: sst_update
   end type
 
   integer :: WRF_numOfImportFields
@@ -129,6 +130,12 @@ module atmosphere_wrf
 
     call wrf_init(  no_init1=.TRUE. )
     call ESMF_LogWrite("Initialized ATM", ESMF_LOGMSG_INFO, rc=rc)
+    call WRF_ReadNamelist(rc)
+    if (ESMF_LogFoundError(rcToCheck=rc, &
+      msg="ATM: error reading &ocean section in namelist.input file", &
+      line=__LINE__, &
+      file=__FILE__)) &
+      return  ! bail out
 
     ! query for importState and exportState
     call NUOPC_ModelGet(model, importState=importState, &
@@ -140,10 +147,10 @@ module atmosphere_wrf
 
     allocate( WRF_FieldMetadata(11) )
     
-#undef WITHFIELDS_MOMENTUMFLUX
-#undef WITHFIELDS_HEATFLUX
-#undef WITHFIELDS_MASSFLUX
-#undef WITHFIELDS_SST
+#undef  WITHFIELDS_MOMENTUMFLUX
+#undef  WITHFIELDS_HEATFLUX
+#undef  WITHFIELDS_MASSFLUX
+#undef  WITHFIELDS_SST
     !! We have added one macro to rapidly decouple the atmosphere component from the rest
     !! of the earth system. Disabling the following macros,
     !! will result in an atmosphere component that does not advertise any importable
@@ -1197,18 +1204,20 @@ module atmosphere_wrf
     !! that flag unmapped points.
     select case (fieldName)
       case ("sst")
-        do i = ips, ipe
-          do j = jps, jpe
-            if (unmappedPointsPtr(i,j)  .ge. 0.99999D0 .and. & 
-                head_grid%landmask(i,j) .eq. 0) then
-!               head_grid%sst(i,j) = fieldPtr(i,j) +  273.15
-	       head_grid%tsk(i,j) = fieldPtr(i,j) +  273.15
-	    else
-!              head_grid%sst(i,j) = 28.D0 +  273.15
-              head_grid%tsk(i,j) = 28.D0 +  273.15	      
-            end if
+        if (WrfToEsmf_Grid%sst_update) then
+          do i = ips, ipe
+            do j = jps, jpe
+              if (unmappedPointsPtr(i,j)  .ge. 0.99999D0 .and. &
+                  head_grid%landmask(i,j) .eq. 0) then
+!                 head_grid%sst(i,j) = fieldPtr(i,j) +  273.15
+	         head_grid%tsk(i,j) = fieldPtr(i,j) +  273.15
+	      else
+!                head_grid%sst(i,j) = 28.D0 +  273.15
+                head_grid%tsk(i,j) = 28.D0 +  273.15 
+              end if
+            end do
           end do
-        end do
+        end if
       case default
         call ESMF_LogWrite("  ATM unknown field name", &
     	  ESMF_LOGMSG_INFO, rc=rc)
@@ -1216,6 +1225,8 @@ module atmosphere_wrf
     end select
 
   end subroutine
+
+  !-----------------------------------------------------------------------------
 
   subroutine WRF_FieldGet(fieldPtr, fieldName, rc)
 
@@ -1332,5 +1343,50 @@ module atmosphere_wrf
 
   end subroutine
 
+  !-----------------------------------------------------------------------------
+
+  subroutine WRF_ReadNamelist(rc)
+
+    integer, intent(out)                  :: rc
+
+    integer :: ierr
+    integer, parameter :: iu = 20
+    character (len=*), parameter :: section_str   = " &ocean"
+    character (len=*), parameter :: parameter_str = "sst_update_esmf"
+    integer :: sst_update_esmf
+    character (len=1000) :: line
+    character (len=100) :: word, equalsymb
+
+    rc = ESMF_SUCCESS
+
+    sst_update_esmf = 0
+    open (unit=iu,file="namelist.input",action="read")
+    do
+      read (iu,"(a)",iostat=ierr) line  !read line into character variable
+      if (ierr /= 0) then
+        exit
+      end if
+      if (line == section_str) then     !found section string at beginning of line
+        read (iu,"(a)",iostat=rc) line  !read following line
+        read (line,*) word              !read word at beginning of line
+        if (word == parameter_str) then !found parameter string at beginning of line
+          read (line,*) word, equalsymb, sst_update_esmf
+          WrfToEsmf_Grid%sst_update = sst_update_esmf
+          if (sst_update_esmf < 0 .or. sst_update_esmf > 1) &
+            rc = ESMF_FAILURE
+        else                            !parmeter string not found
+          rc = ESMF_FAILURE
+        end if
+      end if
+    end do
+
+    if( WrfToEsmf_Grid%localPet == 0 ) then
+      print *, "*************************************"
+      print *, "OCEAN COUPLING WITH ESMF OPTION:     "
+      print *,"sst_update_esmf = ", WrfToEsmf_Grid%sst_update
+      print *, "*************************************"
+    end if
+
+  end subroutine
 
 end module
