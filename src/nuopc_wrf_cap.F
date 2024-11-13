@@ -145,7 +145,7 @@ module atmosphere_wrf
       file=__FILE__)) &
       return  ! bail out
 
-    allocate( WRF_FieldMetadata(11) )
+    allocate( WRF_FieldMetadata(10) )
     
 #define WITHFIELDS_MOMENTUMFLUX
 #define WITHFIELDS_HEATFLUX
@@ -210,11 +210,6 @@ module atmosphere_wrf
       meshloc=ESMF_STAGGERLOC_CENTER)
 #endif
 #ifdef WITHFIELDS_MASSFLUX
-    num = num + 1
-    WRF_FieldMetadata(num) = WRF_Metadata(fieldName="evap", &
-      longName="evaporation_flux", &
-      meshloc=ESMF_STAGGERLOC_CENTER)
-
     num = num + 1
     WRF_FieldMetadata(num) = WRF_Metadata(fieldName="prec", &
       longName="precipitation_flux", &
@@ -1322,17 +1317,11 @@ module atmosphere_wrf
              (STBOLT*head_grid%EMISS(i,j)*head_grid%SST(i,j)**4) )
           end do
         end do
-      case ("evap")
-        do i = ips, ipe
-          do j = jps, jpe
-            fieldPtr(i,j) = head_grid%QFX(i,j)
-          end do
-        end do
       case ("prec")
         do i = ips, ipe
           do j = jps, jpe
-	    fieldPtr(i,j) = (head_grid%RAINCV(i,j)+head_grid%RAINNCV(i,j))/&
-	      head_grid%DT * 86400.D0
+	    fieldPtr(i,j) = - head_grid%QFX(i,j) * 842.926829268 & ! 864000.D0/1025.D0 &
+              + (head_grid%RAINCV(i,j)+head_grid%RAINNCV(i,j))/head_grid%DT * 86400.D0
           end do
         end do
       case default
