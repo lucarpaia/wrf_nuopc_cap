@@ -543,8 +543,11 @@ em_real : wrf
 	@/bin/rm -f ndown.exe > /dev/null 2>&1
 	@/bin/rm -f wrf.exe   > /dev/null 2>&1
 	@ echo '--------------------------------------'
-	( cd main ; $(MAKE) RLFLAGS="$(RLFLAGS)" MODULE_DIRS="$(ALL_MODULES)" SOLVER=em IDEAL_CASE=real em_real )
+	( cd main ; $(MAKE) RLFLAGS="$(RLFLAGS)" ESMF_CAP_OBJ="$(ESMF_CAP_OBJ)" MODULE_DIRS="$(ALL_MODULES)" SOLVER=em IDEAL_CASE=real em_real )
 	( cd test/em_real ; /bin/rm -f wrf.exe ; ln -s ../../main/wrf.exe . )
+	if [ $(ESMF_COUPLING) -eq 2 ] ; then \
+        ( cd $(WRF_SRC_ROOT_DIR)/external/io_esmf ; $(MAKE) nuopc NETCDFPATH="$(NETCDFPATH)" ) ; \
+        fi
 	if [ $(ESMF_COUPLING) -eq 1 ] ; then \
 	  ( cd main ; $(MAKE) RLFLAGS="$(RLFLAGS)" MODULE_DIRS="$(ALL_MODULES)" SOLVER=em IDEAL_CASE=real em_wrf_SST_ESMF ) ; \
 	  ( cd test/em_esmf_exp ; /bin/rm -f wrf.exe ; ln -s ../../main/wrf.exe . ) ; \

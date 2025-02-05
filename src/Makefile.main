@@ -12,9 +12,9 @@ LIBPATHS =
 
 include ../configure.wrf
 
-$(SOLVER)_wrf : wrf.o ../main/nuopc_wrf_cap.o ../main/module_wrf_top.o
+$(SOLVER)_wrf : wrf.o $(ESMF_CAP_OBJ) ../main/module_wrf_top.o
 	$(RANLIB) $(RLFLAGS) $(LIBWRFLIB)
-	$(LD) -o wrf.exe $(LDFLAGS) wrf.o ../main/nuopc_wrf_cap.o ../main/module_wrf_top.o $(LIBWRFLIB) $(CMAQLIB) $(LIB)
+	$(LD) -o wrf.exe $(LDFLAGS) wrf.o $(ESMF_CAP_OBJ) ../main/module_wrf_top.o $(LIBWRFLIB) $(CMAQLIB) $(LIB)
 
 $(SOLVER)_wrfplus : wrf.o ../main/module_wrf_top.o
 	$(RANLIB) $(RLFLAGS) $(LIBWRFLIB)

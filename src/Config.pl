@@ -1015,7 +1015,7 @@ while ( <ARCH_PREAMBLE> )
     $_ =~ s:ESMFIODEFS:-DESMFIO:g ;
     $_ =~ s:ESMFTARGET:wrfio_esmf:g ;
     $_ =~ s:\# ESMFINCLUDEGOESHERE:include \$\(ESMFLIB\)/esmf.mk: ;
-
+    $_ =~ s:ESMFCAPOBJ:../main/nuopc_wrf_cap.o:g ;
     }
   else
     {
@@ -1025,6 +1025,7 @@ while ( <ARCH_PREAMBLE> )
     $_ =~ s:ESMFIOINC:-I\$\(WRF_SRC_ROOT_DIR\)/external/esmf_time_f90:g ;
     $_ =~ s:ESMFIODEFS::g ;
     $_ =~ s:ESMFTARGET:esmf_time:g ;
+    $_ =~ s:ESMFCAPOBJ::g ;
     }
 
   # CTSM substitutions in preamble
