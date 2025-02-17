@@ -20,6 +20,7 @@ ln -sf ${WRF_UPDATE_DIR0}/module_surface_driver.F      ${WRF_DIR}/phys/
 ln -sf ${WRF_UPDATE_DIR0}/sf_sfclayrev.F90             ${WRF_DIR}/phys/physics_mmm/
 ln -sf ${WRF_UPDATE_DIR0}/module_first_rk_step_part1.F ${WRF_DIR}/dyn_em/
 ln -sf ${WRF_UPDATE_DIR0}/Registry.EM_COMMON           ${WRF_DIR}/Registry/
+ln -sf ${WRF_UPDATE_DIR0}/module_wrf_top.F             ${WRF_DIR}/main/
 
 Then copy also the makefile that create the wrf library with the cap layer and
 create the makefile fragment:
