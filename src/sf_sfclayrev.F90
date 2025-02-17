@@ -10,7 +10,7 @@
 
 
  real(kind=kind_phys),parameter:: vconvc= 1.
- !real(kind=kind_phys),parameter:: czo   = 0.0185
+ real(kind=kind_phys),parameter:: czo   = 0.0185
  real(kind=kind_phys),parameter:: ozo   = 1.59e-5
 
  real(kind=kind_phys),dimension(0:1000 ),save:: psim_stab,psim_unstab,psih_stab,psih_unstab
