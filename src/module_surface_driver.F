@@ -27,7 +27,7 @@ CONTAINS
      &          ,tyr,tyra,tdly,tlag,lagday,nyear,nday,tmn_update,yr   &
      &          ,t_phy,u10,udrunoff,ust,uz0                           &
      &          ,u_frame,u_phy,v10,vegfra,u10e,v10e,uoce,voce         &
-     &          ,vz0,v_frame,v_phy,warm_rain,wspd,xice,xland,z,znt    &
+     &          ,vz0,v_frame,v_phy,warm_rain,wspd,xice,xland,z,znt,cha &
      &          ,max_edom,cplmask                                     &
      &          ,zs                                                   & 
      &          ,albsi, icedepth,snowsi                               &
@@ -473,6 +473,7 @@ CONTAINS
 !-- MZNT          momentum time-varying roughness length (m)
 !-- Z0            background roughness length (m)
 !-- MAVAIL        surface moisture availability (between 0 and 1)
+!-- CHA           Charnock parameter for water surfaces (-)
 !-- UST           u* in similarity theory (m/s)
 !-- MOL           T* (similarity theory) (K)
 !-- HOL           PBL height over Monin-Obukhov length
@@ -724,6 +725,7 @@ CONTAINS
    REAL, DIMENSION( ims:ime, jms:jme ) , INTENT(INOUT)::   VZ0
    REAL, DIMENSION( ims:ime, jms:jme ) , INTENT(INOUT)::   WSPD
    REAL, DIMENSION( ims:ime, jms:jme ) , INTENT(INOUT)::   ZNT
+   REAL, DIMENSION( ims:ime, jms:jme ) , INTENT(IN)   ::   CHA
 !-----fds (06/2010)---------------------------------------------
    REAL, DIMENSION( ims:ime, jms:jme ) , OPTIONAL, INTENT(OUT)::   SSIB_LHF ! SSiB output
    REAL, DIMENSION( ims:ime, jms:jme ) , OPTIONAL, INTENT(OUT)::   SSIB_SHF ! SSiB output
@@ -1466,8 +1468,6 @@ CONTAINS
    INTEGER, DIMENSION( ims:ime , jms:jme ), INTENT(INOUT),OPTIONAL :: irr_rand_field
    INTEGER, INTENT(IN ),OPTIONAL:: sf_surf_irr_scheme,irr_start_hour,irr_num_hours,irr_start_julianday,irr_end_julianday,irr_freq,irr_ph
 
-
-  REAL, DIMENSION( ims:ime, jms:jme ) ::   CZOOO
 ! WRF-Solar EPS
   real, dimension (:, :, :), allocatable :: smois_tmp, tslb_tmp
 
@@ -1478,7 +1478,6 @@ CONTAINS
 !------------------------------------------------------------------
 ! Initialize local variables
   q_ref2m = 0.0
-  czooo = 0.0185
 !------------------------------------------------------------------
 !
 ! stop run if using ssib and fractional seaice=0  (fds 12/2010)
@@ -2099,7 +2098,7 @@ CONTAINS
          IF ( FRACTIONAL_SEAICE == 1 ) THEN
             CALL SFCLAYREV_SEAICE_WRAPPER(u_phytmp,v_phytmp,t_phy,qv_curr,&
                  p_phy,dz8w,cp,g,rcp,r_d,xlv,psfc,chs,chs2,cqs2,cpm, &
-                 znt,ust,pblh,mavail,zol,mol,regime,psim,psih,fm,fhh, &
+                 znt,cha,ust,pblh,mavail,zol,mol,regime,psim,psih,fm,fhh, &
                  xland,hfx,qfx,lh,tsk,flhc,flqc,qgh,qsfc,rmol,       &
                  u10,v10,th2,t2,q2,                                  &
                  gz1oz0,wspd,br,isfflx,dx2d,                         &
@@ -2118,7 +2117,7 @@ CONTAINS
          ELSE
          CALL SFCLAYREV(u_phytmp,v_phytmp,t_phy,qv_curr,&
                p_phy,dz8w,cp,g,rcp,r_d,xlv,psfc,chs,chs2,cqs2,cpm, &
-               znt,czooo,ust,pblh,mavail,zol,mol,regime,psim,psih,fm,fhh, &
+               znt,cha,ust,pblh,mavail,zol,mol,regime,psim,psih,fm,fhh, &
                xland,hfx,qfx,lh,tsk,flhc,flqc,qgh,qsfc,rmol,       &
                u10,v10,th2,t2,q2,                                  &
                gz1oz0,wspd,br,isfflx,dx2d,                         &
@@ -5823,7 +5822,7 @@ CONTAINS
 
    SUBROUTINE sfclayrev_seaice_wrapper(U3D,V3D,T3D,QV3D,P3D,dz8w,     &
                      CP,G,ROVCP,R,XLV,PSFC,CHS,CHS2,CQS2,CPM,      &
-                     ZNT,UST,PBLH,MAVAIL,ZOL,MOL,REGIME,PSIM,PSIH, &
+                     ZNT,CHA,UST,PBLH,MAVAIL,ZOL,MOL,REGIME,PSIM,PSIH, &
                      FM,FH,                                        &
                      XLAND,HFX,QFX,LH,TSK,FLHC,FLQC,QGH,QSFC,RMOL, &
                      U10,V10,TH2,T2,Q2,                            &
@@ -5902,6 +5901,9 @@ CONTAINS
                                                             CHS2, &
                                                             CQS2, &
                                                              CHS
+
+     REAL,     DIMENSION( ims:ime, jms:jme )                    , &
+               INTENT(IN)   ::                         CHA
 
      REAL,     DIMENSION( ims:ime, jms:jme )                    , &
                INTENT(INOUT)   ::                      FLHC,FLQC
@@ -6090,7 +6092,7 @@ CONTAINS
      ! land/frozen-water call
      call sfclayrev(U3D,V3D,T3D,QV3D,P3D,dz8w,                    & ! I
                  CP,G,ROVCP,R,XLV,PSFC,CHS,CHS2,CQS2,CPM,      & ! I,I,I,I,I,I,IO,IO,IO,IO,
-                 ZNT,UST,PBLH,MAVAIL,ZOL,MOL,REGIME,PSIM,PSIH, &
+                 ZNT,CHA,UST,PBLH,MAVAIL,ZOL,MOL,REGIME,PSIM,PSIH, &
                  FM,FH,                                        &
                  XLAND,HFX,QFX,LH,TSK_LOCAL,FLHC,FLQC,QGH,QSFC,RMOL, &
                  U10,V10,TH2,T2,Q2,                            &
@@ -6178,7 +6180,7 @@ CONTAINS
      call sfclayrev(U3D,V3D,T3D,QV3D,P3D,dz8w,                    & ! I
                  CP,G,ROVCP,R,XLV,PSFC,                        & ! I
                  CHS_SEA,CHS2_SEA,CQS2_SEA,CPM_SEA,            & ! I/O
-                 ZNT_SEA,UST_SEA,                              & ! I/O
+                 ZNT_SEA,CHA,UST_SEA,                          & ! I/O
                  PBLH,MAVAIL_SEA,                              & ! I
                  ZOL_SEA,MOL_SEA,REGIME_SEA,PSIM_SEA,PSIH_SEA, & ! I/O
                  FM_SEA,FH_SEA,                                &

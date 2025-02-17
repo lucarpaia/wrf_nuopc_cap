@@ -6,15 +6,20 @@ How to include the files in WRF?
 WRF_DIR=/path/to/wrf
 WRF_UPDATE_DIR0=/path/to/wrf_nuopc_cap/src
 
-ln -sf ${WRF_UPDATE_DIR0}/Makefile.wrf                ${WRF_DIR}/Makefile
-ln -sf ${WRF_UPDATE_DIR0}/Config.pl                   ${WRF_DIR}/arch/
-ln -sf ${WRF_UPDATE_DIR0}/module_domain.F             ${WRF_DIR}/frame/
-ln -sf ${WRF_UPDATE_DIR0}/module_diag_rasm.F          ${WRF_DIR}/phys/
-ln -sf ${WRF_UPDATE_DIR0}/module_esmf_extensions.F90  ${WRF_DIR}/external/io_esmf/
-ln -sf ${WRF_UPDATE_DIR0}/module_ltng_iccg.F          ${WRF_DIR}/phys/
-ln -sf ${WRF_UPDATE_DIR0}/nuopc_wrf_cap.F             ${WRF_DIR}/main/
-ln -sf ${WRF_UPDATE_DIR0}/Makefile.main               ${WRF_DIR}/main/Makefile
-ln -sf ${WRF_UPDATE_DIR0}/module_cu_sas.F             ${WRF_DIR}/phys/
+ln -sf ${WRF_UPDATE_DIR0}/Makefile.wrf                 ${WRF_DIR}/Makefile
+ln -sf ${WRF_UPDATE_DIR0}/Config.pl                    ${WRF_DIR}/arch/
+ln -sf ${WRF_UPDATE_DIR0}/module_domain.F              ${WRF_DIR}/frame/
+ln -sf ${WRF_UPDATE_DIR0}/module_diag_rasm.F           ${WRF_DIR}/phys/
+ln -sf ${WRF_UPDATE_DIR0}/module_esmf_extensions.F90   ${WRF_DIR}/external/io_esmf/
+ln -sf ${WRF_UPDATE_DIR0}/module_ltng_iccg.F           ${WRF_DIR}/phys/
+ln -sf ${WRF_UPDATE_DIR0}/nuopc_wrf_cap.F              ${WRF_DIR}/main/
+ln -sf ${WRF_UPDATE_DIR0}/Makefile.main                ${WRF_DIR}/main/Makefile
+ln -sf ${WRF_UPDATE_DIR0}/module_cu_sas.F              ${WRF_DIR}/phys/
+ln -sf ${WRF_UPDATE_DIR0}/module_sf_sfclayrev.F        ${WRF_DIR}/phys/
+ln -sf ${WRF_UPDATE_DIR0}/module_surface_driver.F      ${WRF_DIR}/phys/
+ln -sf ${WRF_UPDATE_DIR0}/sf_sfclayrev.F90             ${WRF_DIR}/phys/physics_mmm/
+ln -sf ${WRF_UPDATE_DIR0}/module_first_rk_step_part1.F ${WRF_DIR}/dyn_em/
+ln -sf ${WRF_UPDATE_DIR0}/Registry.EM_COMMON           ${WRF_DIR}/Registry/
 
 Then copy also the makefile that create the wrf library with the cap layer and
 create the makefile fragment:

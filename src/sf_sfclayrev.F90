@@ -77,7 +77,7 @@
 !!
  subroutine sf_sfclayrev_run(ux,vx,t1d,qv1d,p1d,dz8w1d,                &
                              cp,g,rovcp,r,xlv,psfcpa,chs,chs2,cqs2,    &
-                             cpm,pblh,rmol,znt,czo,ust,mavail,zol,mol, &
+                             cpm,pblh,rmol,znt,cha,ust,mavail,zol,mol, &
                              regime,psim,psih,fm,fh,                   &
                              xland,hfx,qfx,tsk,                        &
                              u10,v10,th2,t2,q2,flhc,flqc,qgh,          &
@@ -156,7 +156,6 @@
     fm,         &
     fh,         &
     znt,        &
-    czo,        &
     zol,        &
     ust,        &
     cpm,        &
@@ -166,6 +165,9 @@
     flhc,       &
     flqc,       &
     qgh
+
+ real(kind=kind_phys),intent(in),dimension(its:):: &
+    cha
 
  real(kind=kind_phys),intent(inout),dimension(its:),optional:: &
     ustm
@@ -802,8 +804,8 @@
           znt(i) = depth_dependent_z0(water_depth(i),znt(i),ust(i))
        else
           !Since V3.7 (ref: EC Physics document for Cy36r1)
-          WRITE(*,*) czo(i)
-          znt(i)=czo(i)*ust(i)*ust(i)/g+0.11*1.5e-5/ust(i)
+          WRITE(*,*) cha(i)
+          znt(i)=cha(i)*ust(i)*ust(i)/g+0.11*1.5e-5/ust(i)
           ! v3.9: add limit as in isftcflx = 1,2
           znt(i)=min(znt(i),2.85e-3)
        endif

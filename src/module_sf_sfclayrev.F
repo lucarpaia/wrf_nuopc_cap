@@ -15,7 +15,7 @@
 !=================================================================================================================
  subroutine sfclayrev(u3d,v3d,t3d,qv3d,p3d,dz8w,                    &
                       cp,g,rovcp,r,xlv,psfc,chs,chs2,cqs2,cpm,      &
-                      znt,czo,ust,pblh,mavail,zol,mol,regime,       &
+                      znt,cha,ust,pblh,mavail,zol,mol,regime,       &
                       psim,psih,                                    &
                       fm,fh,                                        &
                       xland,hfx,qfx,lh,tsk,flhc,flqc,qgh,qsfc,rmol, &
@@ -98,7 +98,6 @@
     fm,         &
     fh,         &
     znt,        &
-    czo,        &
     zol,        &
     ust,        &
     cpm,        &
@@ -108,6 +107,9 @@
     flhc,       &
     flqc,       &
     qgh
+
+ real(kind=kind_phys),intent(in),dimension(ims:ime,jms:jme):: &
+    cha
 
  real(kind=kind_phys),intent(inout),dimension(ims:ime,jms:jme),optional:: &
     ustm
@@ -132,7 +134,7 @@
 
  real(kind=kind_phys),dimension(its:ite):: &
     regime_hv,hfx_hv,qfx_hv,qsfc_hv,mol_hv,rmol_hv,gz1oz0_hv,wspd_hv, &
-    br_hv,psim_hv,psih_hv,fm_hv,fh_hv,znt_hv,czo_hv,zol_hv,ust_hv,cpm_hv, &
+    br_hv,psim_hv,psih_hv,fm_hv,fh_hv,znt_hv,cha_hv,zol_hv,ust_hv,cpm_hv, &
     chs2_hv,cqs2_hv,chs_hv,flhc_hv,flqc_hv,qgh_hv
  real(kind=kind_phys),dimension(its:ite):: &
     ustm_hv
@@ -183,7 +185,7 @@
        fm_hv(i)     = fm(i,j)
        fh_hv(i)     = fh(i,j)
        znt_hv(i)    = znt(i,j)
-       czo_hv(i)    = czo(i,j)
+       cha_hv(i)    = cha(i,j)
        zol_hv(i)    = zol(i,j)
        ust_hv(i)    = ust(i,j)
        cpm_hv(i)    = cpm(i,j)
@@ -208,7 +210,7 @@
     call sf_sfclayrev_run(ux=u1d,vx=v1d,t1d=t1d,qv1d=qv1d,p1d=p1d,dz8w1d=dz1d,                     &
                           cp=cp,g=g,rovcp=rovcp,r=r,xlv=xlv,psfcpa=psfc_hv,chs=chs_hv,             &
                           chs2=chs2_hv,cqs2=cqs2_hv,cpm=cpm_hv,pblh=pblh_hv,                       &
-                          rmol=rmol_hv,znt=znt_hv,czo=czo_hv,ust=ust_hv,mavail=mavail_hv,          &
+                          rmol=rmol_hv,znt=znt_hv,cha=cha_hv,ust=ust_hv,mavail=mavail_hv,          &
                           zol=zol_hv,mol=mol_hv,regime=regime_hv,psim=psim_hv,                     &
                           psih=psih_hv,fm=fm_hv,fh=fh_hv,xland=xland_hv,lakemask=lakemask_hv,      &
                           hfx=hfx_hv,qfx=qfx_hv,tsk=tsk_hv,u10=u10_hv,                             &
