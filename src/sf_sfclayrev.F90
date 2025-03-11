@@ -804,7 +804,7 @@
           znt(i) = depth_dependent_z0(water_depth(i),znt(i),ust(i))
        else
           !Since V3.7 (ref: EC Physics document for Cy36r1)
-          WRITE(*,*) cha(i)
+          !WRITE(*,*) cha(i) !lrp: paranoia first check on the value
           znt(i)=cha(i)*ust(i)*ust(i)/g+0.11*1.5e-5/ust(i)
           ! v3.9: add limit as in isftcflx = 1,2
           znt(i)=min(znt(i),2.85e-3)

@@ -44,6 +44,8 @@ module atmosphere_wrf
     integer                     :: localPet
     integer                     :: petCount
     integer                     :: sst_update
+    integer                     :: charnock_update
+    integer                     :: history_interval
   end type
 
   integer :: WRF_numOfImportFields
@@ -145,12 +147,13 @@ module atmosphere_wrf
       file=__FILE__)) &
       return  ! bail out
 
-    allocate( WRF_FieldMetadata(10) )
+    allocate( WRF_FieldMetadata(11) )
     
 #define WITHFIELDS_MOMENTUMFLUX
 #define WITHFIELDS_HEATFLUX
 #define WITHFIELDS_MASSFLUX
 #define WITHFIELDS_SST
+#define WITHFIELDS_SEAROUGHNESS
     !! We have added one macro to rapidly decouple the atmosphere component from the rest
     !! of the earth system. Disabling the following macros,
     !! will result in an atmosphere component that does not advertise any importable
@@ -167,6 +170,12 @@ module atmosphere_wrf
     num = num + 1
     WRF_FieldMetadata(num) = WRF_Metadata(fieldName="sst", &
       longName="sea_surface_temperature", &
+      meshloc=ESMF_STAGGERLOC_CENTER)
+#endif
+#ifdef WITHFIELDS_SEAROUGHNESS
+    num = num + 1
+    WRF_FieldMetadata(num) = WRF_Metadata(fieldName="z0", &
+      longName="roughness_length", &
       meshloc=ESMF_STAGGERLOC_CENTER)
 #endif
 
@@ -483,7 +492,7 @@ module atmosphere_wrf
     write(dateString, & 
       "(I4,'-',I2.2,'-',I2.2,'_',I2.2,':',I2.2,':',I2.2)") & 
       currYear,currMonth, currDay, currHour, currMinute, currSecond
-    write(petString, "('.',I1,'.',I1)") &
+    write(petString, "('.',I0,'.',I0)") &
       WrfToEsmf_Grid%petCount, WrfToEsmf_Grid%localPet
 
     call ESMF_ClockPrint(clock, options="stopTime", &
@@ -507,32 +516,20 @@ module atmosphere_wrf
     !! the specific field among the ones that we have created. The next step is to run
     !! the toy model, that is we simply re-evaluate at the new time the arrays of fluxes. The
     !! fields are then assigned to the updated arrays:
-    do var=1, WRF_numOfImportFields-1
-      call ESMF_StateGet(importState, field=field, &
-        itemName="umap", rc=rc)
-      if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
-        line=__LINE__, &
-        file=__FILE__)) &
-        return  ! bail out
+    call ESMF_StateGet(importState, field=field, &
+      itemName="umap", rc=rc)
+    if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+      line=__LINE__, &
+      file=__FILE__)) &
+      return  ! bail out
 
-      call ESMF_FieldGet(field, localDe=0, farrayPtr=unmappedPointsPtr, &
-        totalLBound=fieldtotalLBnd, totalUBound=fieldtotalUBnd, &
-        totalCount=fieldtotal_count, rc=rc)
-      if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
-        line=__LINE__, &
-        file=__FILE__)) &
-        return  ! bail out
-
-!!      if ( currTimeSec>0. .and. mod(currTimeSec,3600).lt.1 ) then
-!!        call WRF_FieldWrite(field, &
-!!          trim(WRF_FieldMetadata(var)%fieldName)//trim(dateString) &
-!!          //trim(".vtk"), rc)
-!!        if(ESMF_LogFoundError(rcToCheck=rc,msg=ESMF_LOGERR_PASSTHRU, &
-!!          line=__LINE__, &
-!!          file=__FILE__)) &
-!!          return  ! bail out
-!!      endif
-    enddo
+    call ESMF_FieldGet(field, localDe=0, farrayPtr=unmappedPointsPtr, &
+      totalLBound=fieldtotalLBnd, totalUBound=fieldtotalUBnd, &
+      totalCount=fieldtotal_count, rc=rc)
+    if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+      line=__LINE__, &
+      file=__FILE__)) &
+      return  ! bail out
 
     do var=2, WRF_numOfImportFields
 
@@ -552,7 +549,8 @@ module atmosphere_wrf
         return  ! bail out
 
 !      if ( currTimeSec>0. .and. mod(currTimeSec,idtatm).lt.1 ) then
-      if ( currTimeSec>0. .and. mod(currTimeSec,86400).lt.1 ) then
+      if ( currTimeSec>0. .and. &
+        mod(currTimeSec,WrfToEsmf_Grid%history_interval*60).lt.1 ) then
 	call WRF_FieldWrite(field, &
 	  trim(WRF_FieldMetadata(var)%fieldName)//trim(dateString) &
 	  //trim(petString)//trim(".vtk"), rc)
@@ -1197,6 +1195,9 @@ module atmosphere_wrf
     !! contained in the list \textsf{unmappedDstList}. This list is not
     !! available in ESMF 8.6.0. Here we have used the auxiliary field
     !! that flag unmapped points.
+    !! The sea-state is represented by two variable, the sea-surface
+    !! temperature and the sea-roughness expressed by the charnock
+    !! parameter.
     select case (fieldName)
       case ("sst")
         if (WrfToEsmf_Grid%sst_update) then
@@ -1209,6 +1210,17 @@ module atmosphere_wrf
 	      else
 !                head_grid%sst(i,j) = 28.D0 +  273.15
                 head_grid%tsk(i,j) = 28.D0 +  273.15 
+              end if
+            end do
+          end do
+        end if
+      case ("z0")
+        if (WrfToEsmf_Grid%charnock_update) then
+          do i = ips, ipe
+            do j = jps, jpe
+              if (unmappedPointsPtr(i,j)  .ge. 0.99999D0 .and. &
+                  head_grid%landmask(i,j) .eq. 0) then
+                 head_grid%cha(i,j) = fieldPtr(i,j)
               end if
             end do
           end do
@@ -1341,8 +1353,10 @@ module atmosphere_wrf
     integer :: ierr
     integer, parameter :: iu = 20
     character (len=*), parameter :: section_str   = " &ocean"
-    character (len=*), parameter :: parameter_str = "sst_update_esmf"
-    integer :: sst_update_esmf
+    character (len=*), parameter :: parameter_sst_str = "sst_update_esmf"
+    character (len=*), parameter :: parameter_cha_str = "charnock_update_esmf"
+    character (len=*), parameter :: parameter_his_str = "history_interval_esmf"
+    integer :: sst_update_esmf, charnock_update_esmf, history_interval_esmf
     character (len=1000) :: line
     character (len=100) :: word, equalsymb
 
@@ -1356,23 +1370,50 @@ module atmosphere_wrf
         exit
       end if
       if (line == section_str) then     !found section string at beginning of line
+
         read (iu,"(a)",iostat=rc) line  !read following line
         read (line,*) word              !read word at beginning of line
-        if (word == parameter_str) then !found parameter string at beginning of line
+        if (word == parameter_sst_str) then !found parameter string at beginning of line
           read (line,*) word, equalsymb, sst_update_esmf
           WrfToEsmf_Grid%sst_update = sst_update_esmf
           if (sst_update_esmf < 0 .or. sst_update_esmf > 1) &
             rc = ESMF_FAILURE
         else                            !parmeter string not found
           rc = ESMF_FAILURE
+
         end if
+
+        read (iu,"(a)",iostat=rc) line  !read following line
+        read (line,*) word              !read word at beginning of line
+        if (word == parameter_cha_str) then !found parameter string at beginning of line
+          read (line,*) word, equalsymb, charnock_update_esmf
+          WrfToEsmf_Grid%charnock_update = charnock_update_esmf
+          if (charnock_update_esmf < 0 .or. charnock_update_esmf > 1) &
+            rc = ESMF_FAILURE
+        else                            !parmeter string not found
+          rc = ESMF_FAILURE
+        end if
+
+        read (iu,"(a)",iostat=rc) line  !read following line
+        read (line,*) word              !read word at beginning of line
+        if (word == parameter_his_str) then !found parameter string at beginning of line
+          read (line,*) word, equalsymb, history_interval_esmf
+          WrfToEsmf_Grid%history_interval = history_interval_esmf
+          if (history_interval_esmf < 0) &
+            rc = ESMF_FAILURE
+        else                            !parmeter string not found
+          rc = ESMF_FAILURE
+        end if
+
       end if
     end do
 
     if( WrfToEsmf_Grid%localPet == 0 ) then
       print *, "*************************************"
       print *, "OCEAN COUPLING WITH ESMF OPTION:     "
-      print *,"sst_update_esmf = ", WrfToEsmf_Grid%sst_update
+      print *, "sst_update_esmf       = ", WrfToEsmf_Grid%sst_update
+      print *, "charnock_update_esmf  = ", WrfToEsmf_Grid%charnock_update
+      print *, "history_interval_esmf = ", WrfToEsmf_Grid%history_interval
       print *, "*************************************"
     end if
 
