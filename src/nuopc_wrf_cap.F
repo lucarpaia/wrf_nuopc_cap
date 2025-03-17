@@ -948,13 +948,14 @@ module atmosphere_wrf
 !     Create ESMF Grid
 !-----------------------------------------------------------------------
 
-    !! The coordinate system is asked to the SHYFEM configuration file. Please
-    !! note that the user must assure that a single coordinate system
-    !! among all the the components. Two choice are possible in SHYFEM :
-    !! \texttt{isphe=1} stands for spherical (in degrees) or 
-    !! \texttt{isphe=0} stands for cartesian. Please check the SHYFEM manual
-    !! for the details.
-    if ( head_grid%xlong(1,1) .ne. head_grid%xlong(2,1) ) then
+    !! The coordinate system is asked to WRF. We desume it from the 
+    !! coordinates value. For cartesian coordinates WRF set to constant
+    !! values both \textsf{xlong} and \textsf{xlat}. All other coordinate
+    !! system available from a certain projection (mercator, lambert
+    !! etc...) use an interface lat-lon grid which is stored in
+    !! \textsf{xlong} and \textsf{xlat}. Please check the
+    !! WRF manual for the details of the available coordinate system.
+    if ( head_grid%xlong(ips,jps) .ne. head_grid%xlong(ips+1,jps) ) then
       WRF_coordSys = ESMF_COORDSYS_SPH_DEG
     else
       WRF_coordSys = ESMF_COORDSYS_CART
