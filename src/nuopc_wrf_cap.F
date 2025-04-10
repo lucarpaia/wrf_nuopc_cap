@@ -1206,11 +1206,11 @@ module atmosphere_wrf
             do j = jps, jpe
               if (unmappedPointsPtr(i,j)  .ge. 0.99999D0 .and. &
                   head_grid%landmask(i,j) .eq. 0) then
-!                 head_grid%sst(i,j) = fieldPtr(i,j) +  273.15
+                 head_grid%sst(i,j) = fieldPtr(i,j) +  273.15
 	         head_grid%tsk(i,j) = fieldPtr(i,j) +  273.15
-	      else
+!	      else
 !                head_grid%sst(i,j) = 28.D0 +  273.15
-                head_grid%tsk(i,j) = 28.D0 +  273.15 
+!                head_grid%tsk(i,j) = 28.D0 +  273.15 
               end if
             end do
           end do
