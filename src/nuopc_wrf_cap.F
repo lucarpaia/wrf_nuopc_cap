@@ -147,7 +147,7 @@ module atmosphere_wrf
       file=__FILE__)) &
       return  ! bail out
 
-    allocate( WRF_FieldMetadata(11) )
+    allocate( WRF_FieldMetadata(12) )
     
 #define WITHFIELDS_MOMENTUMFLUX
 #define WITHFIELDS_HEATFLUX
@@ -195,6 +195,11 @@ module atmosphere_wrf
     num = num + 1
     WRF_FieldMetadata(num) = WRF_Metadata(fieldName="smns", &
       longName="surface_downward_northward_stress", &
+      meshloc=ESMF_STAGGERLOC_CENTER)
+
+    num = num + 1
+    WRF_FieldMetadata(num) = WRF_Metadata(fieldName="smcd", &
+      longName="surface_momentum_drag_coefficient", &
       meshloc=ESMF_STAGGERLOC_CENTER)
 #endif
 #ifdef WITHFIELDS_HEATFLUX
@@ -709,7 +714,7 @@ module atmosphere_wrf
     write(1,'(a)') "DATASET UNSTRUCTURED_GRID"
     write(1,'(a)', advance='no') "POINTS ";
     write(1, *) (ipe-ips+1)*(jpe-jps+1), " double"
-    if ( head_grid%xlong(1,1) .ne. head_grid%xlong(2,1) ) then
+    if ( head_grid%xlong(ips,jps) .ne. head_grid%xlong(ips+1,jps) ) then
       do j=jps,jpe!-1
       do i=ips,ipe!-1
         write(str,'(f11.3)') head_grid%xlong(i,j)
@@ -1302,6 +1307,18 @@ module atmosphere_wrf
             cff3 = 0.5*(head_grid%V10(i,j)+head_grid%V10(i,j+1))*head_grid%cosa(i,j)+&
               0.5*(head_grid%U10(i,j)+head_grid%U10(i+1,j))*head_grid%sina(i,j)
             cff = cff1*cff2*(head_grid%UST(i,j)**2)*cff3	  
+            fieldPtr(i,j) = cff
+          end do
+        end do
+      case ("smcd")
+        ! The following code is quite inefficient: we use multiple times power of two
+        ! followed by square roots. We do it to use the same exact formula of the wind stress,
+        ! avoiding differences due to the presence of the small number eps.
+        do i = ips, ipe
+          do j = jps, jpe
+            cff2 = 2.0/(((head_grid%U10(i,j)+head_grid%U10(i+1,j))**2+&
+              (head_grid%V10(i,j)+head_grid%V10(i,j+1))**2)**0.5+eps)
+            cff = (cff2**2)*(head_grid%UST(i,j)**2)
             fieldPtr(i,j) = cff
           end do
         end do
