@@ -44,6 +44,7 @@ module atmosphere_wrf
     integer                     :: localPet
     integer                     :: petCount
     integer                     :: sst_update
+    integer                     :: tsk_update
     integer                     :: charnock_update
     integer                     :: history_interval
   end type
@@ -1168,7 +1169,7 @@ module atmosphere_wrf
 
   subroutine WRF_FieldSet(fieldPtr, fieldName, unmappedPointsPtr, rc)
 
-    double precision, pointer, intent(inout) :: fieldPtr(:,:)
+    double precision, pointer, intent(in)    :: fieldPtr(:,:)
     character(len=*), intent(in)             :: fieldName
     double precision, pointer, intent(in)    :: unmappedPointsPtr(:,:)
     integer, intent(out)                     :: rc
@@ -1203,20 +1204,34 @@ module atmosphere_wrf
     !! that flag unmapped points.
     !! The sea-state is represented by two variable, the sea-surface
     !! temperature and the sea-roughness expressed by the charnock
-    !! parameter.
+    !! parameter. Please note that the sea-surface tempearture is
+    !! represented by two variables in WRF: \textsf{sst} and \textsf{tsk}
+    !! Normally both are setted to the same value. However in some
+    !! WRF idealized tests just one has to be setted on. This implementation
+    !! gives you finer control.
     select case (fieldName)
       case ("sst")
         if (WrfToEsmf_Grid%sst_update) then
           do i = ips, ipe
             do j = jps, jpe
-              if (unmappedPointsPtr(i,j)  .ge. 0.99999D0 .and. &
-                  head_grid%landmask(i,j) .eq. 0) then
+              !if (unmappedPointsPtr(i,j)  .ge. 0.99999D0 .and. &
+              !    head_grid%landmask(i,j) .eq. 0) then
                  head_grid%sst(i,j) = fieldPtr(i,j) +  273.15
-	         head_grid%tsk(i,j) = fieldPtr(i,j) +  273.15
 !	      else
 !                head_grid%sst(i,j) = 28.D0 +  273.15
+              !end if
+            end do
+          end do
+        end if
+        if (WrfToEsmf_Grid%tsk_update) then
+          do i = ips, ipe
+            do j = jps, jpe
+              !if (unmappedPointsPtr(i,j)  .ge. 0.99999D0 .and. &
+              !    head_grid%landmask(i,j) .eq. 0) then
+                 head_grid%tsk(i,j) = fieldPtr(i,j) +  273.15
+!             else
 !                head_grid%tsk(i,j) = 28.D0 +  273.15 
-              end if
+              !end if
             end do
           end do
         end if
@@ -1243,9 +1258,9 @@ module atmosphere_wrf
 
   subroutine WRF_FieldGet(fieldPtr, fieldName, rc)
 
-    double precision, pointer, intent(in) :: fieldPtr(:,:)
-    character(len=*), intent(in)          :: fieldName
-    integer, intent(out)                  :: rc
+    double precision, pointer, intent(inout) :: fieldPtr(:,:)
+    character(len=*), intent(in)             :: fieldName
+    integer, intent(out)                     :: rc
  
     real(ESMF_KIND_R8) :: cff, cff1, cff2, cff3   
     real(ESMF_KIND_R8), parameter :: eps=1.0e-10
@@ -1363,7 +1378,17 @@ module atmosphere_wrf
   end subroutine
 
   !-----------------------------------------------------------------------------
-
+  !! The next function read the WRF parameter file and search for the
+  !! coupling section that we have named "ocean". It reads flags to
+  !! update the sst/tsk and the charnock.
+  !! By default all these flags are deactivated, meaning no coupling
+  !! and WRF in standalone mode.
+  !! Last comment is about the two flags controlling the sea-surface
+  !! temperature, \textsf{sst} and \textsf{tsk}. For real WRF cases 
+  !! setting the \textsf{sst} variable is enough, but in certain idealized
+  !! test cases, WRF reads \textsf{tsk}. We leave thus the user the option
+  !! to set one or the other. Btw, if \textsf{sst} is on, then also
+  !! \textsf{tsk} is on.
   subroutine WRF_ReadNamelist(rc)
 
     integer, intent(out)                  :: rc
@@ -1372,15 +1397,20 @@ module atmosphere_wrf
     integer, parameter :: iu = 20
     character (len=*), parameter :: section_str   = " &ocean"
     character (len=*), parameter :: parameter_sst_str = "sst_update_esmf"
+    character (len=*), parameter :: parameter_tsk_str = "tsk_update_esmf"
     character (len=*), parameter :: parameter_cha_str = "charnock_update_esmf"
     character (len=*), parameter :: parameter_his_str = "history_interval_esmf"
-    integer :: sst_update_esmf, charnock_update_esmf, history_interval_esmf
+    integer :: sst_update_esmf, tsk_update_esmf, &
+               charnock_update_esmf, history_interval_esmf
     character (len=1000) :: line
     character (len=100) :: word, equalsymb
 
     rc = ESMF_SUCCESS
 
-    sst_update_esmf = 0
+    WrfToEsmf_Grid%sst_update = 0  ! Default behaviour
+    WrfToEsmf_Grid%tsk_update = 0                 !
+    WrfToEsmf_Grid%charnock_update = 0            !
+    WrfToEsmf_Grid%history_interval = 0           !
     open (unit=iu,file="namelist.input",action="read")
     do
       read (iu,"(a)",iostat=ierr) line  !read line into character variable
@@ -1398,7 +1428,17 @@ module atmosphere_wrf
             rc = ESMF_FAILURE
         else                            !parmeter string not found
           rc = ESMF_FAILURE
+        end if
 
+        read (iu,"(a)",iostat=rc) line  !read following line
+        read (line,*) word              !read word at beginning of line
+        if (word == parameter_tsk_str) then !found parameter string at beginning of line
+          read (line,*) word, equalsymb, tsk_update_esmf
+          WrfToEsmf_Grid%tsk_update = tsk_update_esmf
+          if (tsk_update_esmf < 0 .or. tsk_update_esmf > 1) &
+            rc = ESMF_FAILURE
+        else                            !parmeter string not found
+          rc = ESMF_FAILURE
         end if
 
         read (iu,"(a)",iostat=rc) line  !read following line
@@ -1417,8 +1457,6 @@ module atmosphere_wrf
         if (word == parameter_his_str) then !found parameter string at beginning of line
           read (line,*) word, equalsymb, history_interval_esmf
           WrfToEsmf_Grid%history_interval = history_interval_esmf
-          if (history_interval_esmf < 0) &
-            rc = ESMF_FAILURE
         else                            !parmeter string not found
           rc = ESMF_FAILURE
         end if
@@ -1426,10 +1464,13 @@ module atmosphere_wrf
       end if
     end do
 
+    if (WrfToEsmf_Grid%sst_update) WrfToEsmf_Grid%tsk_update = 1
+
     if( WrfToEsmf_Grid%localPet == 0 ) then
       print *, "*************************************"
       print *, "OCEAN COUPLING WITH ESMF OPTION:     "
       print *, "sst_update_esmf       = ", WrfToEsmf_Grid%sst_update
+      print *, "tsk_update_esmf       = ", WrfToEsmf_Grid%tsk_update
       print *, "charnock_update_esmf  = ", WrfToEsmf_Grid%charnock_update
       print *, "history_interval_esmf = ", WrfToEsmf_Grid%history_interval
       print *, "*************************************"
